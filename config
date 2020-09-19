@@ -1,0 +1,252 @@
+#     _____________________ __  ___
+#    / __   __     _____  //  |/  /
+#   / /_ | | / /| | /| / // /|_/ / 
+#  / __/ | |/ / | |/ |/ // /  / /  
+# /_/    |___/  |__/|__//_/  /_/   2.6.9
+#
+# Fvwm-simple config for the fvwm window manager
+# sep 2020 by robository
+
+#Set width of screen, font & imagepath
+InfoStoreAdd horizontal 1024
+InfoStoreAdd font 'DejaVuSansMono'
+
+ImagePath $HOME/.fvwm/images
+
+#Mouse stays in desktop
+EdgeScroll 0 0 
+
+#Starting taskbar
+DestroyFunc StartFunction
+AddToFunc StartFunction
++ I Module FvwmButtons taskBar
+
+#Key & mouse bindings
+Mouse 1 R A Nop
+Mouse 3 R A Nop
+Key 1 A M restart
+
+#Soundmenu
+DestroyMenu SoundSet
+AddToMenu SoundSet
++ "%audioOff.png%off" SoundSetOff
++ "%audioH.png%Max" SoundSetOn
++ "%audioM.png%1/2" SoundSetOn
++ "%audioL.png%quiet" SoundSetOn
++ "" Nop
++ "%audio.png%Vol" Exec exec urxvt -e alsamixer
++ "%audioEqual.png%Equal"
+
+DestroyFunc SoundSetOff
+AddToFunc SoundSetOff
++ I Exec exec amixer set Master,0 0%
++ I SendToModule taskBar ChangeButton sound Icon "audioOff.png"
+DestroyFunc SoundSetOn
+AddToFunc SoundSetOn
++ I Exec exec amixer set Master,0 100%
++ I SendToModule taskBar ChangeButton sound Icon "audioH.png"
+                                              
+#Style config
+Style * !Icon
+Style * MouseFocusClickRaises, !Sticky, !Title, BorderWidth 10, HandleWidth 1,\
+        HilightBorderColorset 0, ClickToFocus, Colorset 1
+Style taskBar !Title, !Handles, !Borders, WindowListSkip, Sticky, NeverFocus
+Style iconMan Borderwidth 0   
+Style mainMenu !Title, !Handles, !Borders, Sticky, WindowListSkip
+Style winArr !Title, !Handles, !Borders, !Sticky, WindowListSkip
+MenuStyle * BorderWidth 0, Font 'xft:$[infostore.font]:size=10',\
+	    Foreground #000000, Background #ffffff,\
+	    HilightBack #202020 , ActiveFore #ffffff
+	    
+#Colorsets Pixmap image.png RootTransparent
+Colorset 0 fg #ffffff, bg #202020
+Colorset 1 fg #101010, bg #ffffff
+Colorset 2 fg #ffffff, bg #454545
+
+#Fvwmscript config 
+DestroyModuleConfig FvwmScript: *
+*FvwmScript: DefaultColorset 0
+
+#Taskbar config
+DestroyModuleConfig taskBar: *
+*taskBar: Geometry $[infostore.horizontal]x20+0+0
+*taskBar: Padding 1 1
+*taskBar: Colorset 0
+*taskBar: Colums 0
+*taskBar: Frame 0
+*taskBar: Rows 1
+*taskBar: Font "xft:$[infostore.font]:size=14"
+*taskBar: (15x1, Icon "computer.png", ActiveIcon "computerA.png",\
+	   Action(Mouse 1) mainMenuStart, Frame 0)
+*taskBar: (15x1, Icon "terminal.png", ActiveIcon "terminalA.png",\
+	   Action(Mouse 1) "Exec exec urxvt -geometry 90x30+55+45", Frame 0)
+*taskBar: (15x1,  Icon "data.png", ActiveIcon "dataA.png",\
+	   Action(Mouse 1) "Exec exec thunar", Frame 0)
+*taskBar: (15x1, Icon "firefox.png", ActiveIcon "firefox.png",\
+	   Action(Mouse 1) "Exec exec firefox", Frame 0)
+*taskBar: (15x1, Id desktop, Icon "desk1.png",\
+	   Action(Mouse 1) desk0, Action(Mouse 2) desk1,\
+	   Action(Mouse 3) desk2 ,Frame 0)
+*taskBar: (5x1, Frame 0)
+*taskBar: (400x1, Left,  Swallow iconMan 'Module FvwmIconMan iconMan', Frame 0)
+*taskBar: (15x1, Id sound, Icon "audioH.png", Action(Mouse3) 'Menu SoundSet', Frame 0)
+*taskBar: (65x1, Right,  Swallow script-clock 'FvwmScript $./script-clock',\
+	       Frame 1)
+
+DestroyFunc desk0
+AddToFunc desk0 I GoToDesk 0 0
++ I SendToModule taskBar ChangeButton desktop Icon "desk1.png"
+DestroyFunc desk1
+AddToFunc desk1 I GoToDesk 0 1
++ I SendToModule taskBar ChangeButton desktop Icon "desk3.png"
+DestroyFunc desk2
+AddToFunc desk2 I GoToDesk 0 2
++ I SendToModule taskBar ChangeButton desktop Icon "desk2.png"
+
+#Iconman config
+DestroyModuleConfig iconMan: *
+*iconMan: Title " "
+*iconMan: ButtonGeometry 120x20
+*iconMan: ManagerGeometry 0x1
+*iconMan: Resolution desk
+*iconMan: ReliefThickness 0
+*iconMan: DrawIcons always
+*iconMan: Sort id
+*iconMan: FocusAndSelectColorset 1
+*iconMan: TitleColorset 0
+*iconMan: FocusColorset 1
+*iconMan: PlainColorset 2
+*iconMan: IconColorset 0
+*iconMan: Font "xft:$[infostore.font]:size=9"
+*iconMan: Format "%t"
+*iconMan: Action Mouse 2 A sendcommand "Close"
+*iconMan: Action Mouse 3 A sendcommand winArrStart
+
+#Window arrangment menu
+DestroyFunc winArrStart
+AddToFunc winArrStart
++ I SetEnv win $[w.id]
++ I Module FvwmButtons winArr
++ I FvwmAuto 100 -PassId -menterleave Nop winArrKill
+
+DestroyFunc winArrKill
+AddToFunc winArrKill
++ I KillModule FvwmButtons winArr
++ I KillModule FvwmAuto
+
+#Window arrangment config
+DestroyModuleConfig winArr: *
+*winArr: Geometry 200x40+250+20
+*winArr: Padding 1 1 
+*winArr: Rows 2
+*winArr: Columns 10
+*winArr: Colorset 0
+#top buttons
+*winArr: (1x1, Icon 'winArrM.png', Action(Mouse 1) winArrM, Frame 0)
+*winArr: (1x1, Icon 'winArrL.png', Action(Mouse 1) winArrL, Frame 0)
+*winArr: (1x1, Icon 'winArrT.png', Action(Mouse 1) winArrU, Frame 0)
+*winArr: (1x1, Frame 0)
+*winArr: (1x1, Icon 'winArrNW.png', Action(Mouse 1) winArrNW, Frame 0)
+*winArr: (1x1, Icon 'winArrNE.png', Action(Mouse 1) winArrNE, Frame 0)
+*winArr: (1x1, Frame 0)
+*winArr: (1x1, Icon 'winArrL.png', Frame 0)
+*winArr: (1x1, Icon 'winArrL.png', Frame 0)
+*winArr: (1x1, Icon 'winArrL.png', Action(Mouse 1) WinArrClose, Frame 0)
+#bottom buttons
+*winArr: (1x1, Icon 'winArrC.png', Action(Mouse 1) winArrC, Frame 0)
+*winArr: (1x1, Icon 'winArrR.png', Action(Mouse 1) winArrR, Frame 0)
+*winArr: (1x1, Icon 'winArrB.png', Action(Mouse 1) winArrD, Frame 0)
+*winArr: (1x1, Frame 0)
+*winArr: (1x1, Icon 'winArrSW.png', Action(Mouse 1) winArrSW, Frame 0)
+*winArr: (1x1, Icon 'winArrSE.png', Action(Mouse 1) winArrSE, Frame 0)
+*winArr: (1x1, Frame 0)
+*winArr: (1x1, Icon 'winArrL.png', Frame 0)
+*winArr: (1x1, Icon 'winArrL.png', Frame 0)
+*winArr: (1,1, Icon 'exit.png', Action(Mouse 1) KillModule FvwmButtons winArr, Frame 0)
+
+DestroyFunc winArrClose
+AddToFunc winArrClose
++ I WindowId $[win] Close
++ I KillModule FvwmButtons winArr
+DestroyFunc winArrM
+AddToFunc winArrM
++ I WindowId $[win] Resize 1024p 748p
++ I WindowId $[win] Move 0p 20p
++ I WindowId $[win] Raise
++ I KillModule FvwmButtons winArr
+DestroyFunc winArrC
+AddToFunc winArrC
++ I WindowId $[win] Resize 758p 579p
++ I WindowId $[win] Move 128p 128p
++ I WindowId $[win] Raise
++ I KillModule FvwmButtons winArr
+DestroyFunc winArrU
+AddToFunc winArrU
++ I WindowId $[win] Resize 1024p 374p
++ I WindowId $[win] Move 0p 20p
++ I WindowId $[win] Raise
++ I KillModule FvwmButtons winArr
+DestroyFunc winArrD
+AddToFunc winArrD
++ I WindowId $[win] Resize 1024p 374p
++ I WindowId $[win] Move 0p 394p
++ I WindowId $[win] Raise
++ I KillModule FvwmButtons winArr
+DestroyFunc winArrL
+AddToFunc winArrL
++ I WindowId $[win] Resize 512p 748p
++ I WindowId $[win] Move 0p 20p
++ I WindowId $[win] Raise
++ I KillModule FvwmButtons winArr
+DestroyFunc winArrR
+AddToFunc winArrR
++ I WindowId $[win] Resize 512p 748p
++ I WindowId $[win] Move 512p 20p
++ I WindowId $[win] Raise
++ I KillModule FvwmButtons winArr
+AddToFunc winArrSW  
++ I WindowId $[win] Resize 512p 374p
++ I WindowId $[win] Move 0p 394p
++ I WindowId $[win] Raise
++ I KillModule FvwmButtons winArr
+AddToFunc winArrSE  
++ I WindowId $[win] Resize 512p 374p
++ I WindowId $[win] Move 512p 394p
++ I WindowId $[win] Raise
++ I KillModule FvwmButtons winArr
+AddToFunc winArrNW  
++ I WindowId $[win] Resize 512p 374p
++ I WindowId $[win] Move 0p 20p
++ I WindowId $[win] Raise
++ I KillModule FvwmButtons winArr
+AddToFunc winArrNE  
++ I WindowId $[win] Resize 512p 374p
++ I WindowId $[win] Move 512p 20p
++ I WindowId $[win] Raise
++ I KillModule FvwmButtons winArr
+
+#Main menu
+DestroyFunc mainMenuStart
+AddToFunc mainMenuStart
++ I Module FvwmButtons mainMenu
++ I FvwmAuto 100 -PassId -menterleave Nop mainMenuKill 
+
+DestroyFunc mainMenuKill
+AddToFunc mainMenuKill
++ I KillModule FvwmButtons mainMenu
++ I KillModule FvwmAuto
+
+#Main menu config
+DestroyModuleConfig mainMenu: *
+*mainMenu: Geometry 100x60+0+20
+*mainMenu: Padding 1 1
+*mainMenu: Colorset 0
+*mainMenu: Rows 20
+*mainMenu: Font "xft:$[infostore.font]:size=9"
+*mainMenu: (Title 'FVWM', Colorset 1, frame 0)
+*mainMenu: (Icon 'exit.png', Title (side) "Exit", ActiveColorset 1,\
+            Action(Mouse 1) 'Module FvwmScript FvwmScript-ConfirmQuit',\
+            frame 1)
+*mainMenu: (Icon 'shutdown.png', Title (side) "Exit", ActiveColorset 1,\
+            Action(Mouse 1) 'Module FvwmScript FvwmScript-ConfirmQuit',\
+            frame 1)
