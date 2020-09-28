@@ -1,0 +1,40 @@
+WindowTitle {Test}
+WindowSize 500 400
+WindowPosition 300 60
+Font 'xft:FreeSans:size=10'
+
+Init 
+ Begin
+ End
+
+Widget 1
+Property
+ Type RadioButton
+ Value 0
+ Title {yes}
+ Position 100 30
+Main
+ Case message of
+ SingleClic:
+ Begin
+  ChangeValue 2 0
+ End
+End
+
+Widget 2
+Property
+ Type RadioButton
+ Value 0
+ Title {no}
+ Position 100 50
+Main
+ Case message of
+ SingleClic:
+ Begin
+  ChangeValue 1 0
+ End
+End
+
+
+
+
